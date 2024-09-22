@@ -1,2 +1,2 @@
 # insurance_project
-This project CI/CD with Jenkins and Container microservices 
+This project Is built with CI/CD using Jenkins and contains terraform scripts, ansible playbooks, Dockerfiles, and Container microservices. 
