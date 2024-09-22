@@ -1,0 +1,56 @@
+---
+- name: Installing JDK-17 and Docker
+  hosts: all
+  become: yes
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install OpenJDK 17
+      apt:
+        name: openjdk-17-jdk
+        state: present
+
+    - name: Install dependencies
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - software-properties-common
+
+    - name: Add Docker APT key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker repository
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
+        state: present
+
+    - name: Install Docker
+      apt:
+        name: docker-ce
+        state: present
+
+    - name: Start Docker service
+      systemd:
+        name: docker
+        enabled: yes
+        state: started
+
+    - name: Copy files and directories to /home/ubuntu
+      copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        mode: "{{ item.mode }}"
+      loop:
+        - { src: "src/", dest: "/home/ubuntu/src/", mode: '0755' }
+        - { src: "target/", dest: "/home/ubuntu/target/", mode: '0755' }
+        - { src: "pom.xml", dest: "/home/ubuntu/pom.xml", mode: '0644' }
+        - { src: "mvnw", dest: "/home/ubuntu/mvnw", mode: '0755' }
+        - { src: "mvnw.cmd", dest: "/home/ubuntu/mvnw.cmd", mode: '0755' }
