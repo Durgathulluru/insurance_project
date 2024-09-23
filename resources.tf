@@ -56,11 +56,16 @@ resource "aws_instance" "capstone" {
   provisioner "local-exec" {
     command = "ansible-playbook -i myhosts --user ${local.ssh_user} --private-key ${local.private_key} ansible.yml"
   }
+}
 
-  provisioner "remote-exec" {
-    inline = [
-      "sudo docker build -t insurance:latest .",
-      "sudo docker run -d --name insurance_web -p 8080:8080 insurance:latest"
-    ]
+resource "null_resource" "docker_compose" {
+  provisioner "local-exec" {
+    command = <<EOT
+    export DB_CREDENTIALS=$(aws secretsmanager get-secret-value --secret-id db_credentials --query SecretString --output text)
+    export POSTGRES_USER=$(echo $DB_CREDENTIALS | jq -r .POSTGRES_USER)
+    export POSTGRES_PASSWORD=$(echo $DB_CREDENTIALS | jq -r .POSTGRES_PASSWORD)
+    scp -i ${local.private_key} ./docker-compose.yaml ${local.ssh_user}@${aws_instance.capstone.public_ip}:/home/ubuntu/
+    ssh -i ${local.private_key} ${local.ssh_user}@${aws_instance.capstone.public_ip} 'cd /home/ubuntu/ && POSTGRES_USER=$POSTGRES_USER POSTGRES_PASSWORD=$POSTGRES_PASSWORD docker-compose up --build -d'
+    EOT
   }
 }
