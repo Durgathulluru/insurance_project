@@ -43,6 +43,18 @@
         enabled: yes
         state: started
 
+    - name: Install Docker Compose
+      get_url:
+        url: https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)
+        dest: /usr/local/bin/docker-compose
+        mode: '0755'
+
+    - name: Ensure Docker Compose is executable
+      file:
+        path: /usr/local/bin/docker-compose
+        mode: '0755'
+        state: file
+
     - name: Copy files and directories to /home/ubuntu
       copy:
         src: "{{ item.src }}"
