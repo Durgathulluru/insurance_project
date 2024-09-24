@@ -61,7 +61,8 @@
         dest: "{{ item.dest }}"
         mode: "{{ item.mode }}"
       loop:
-        - { src: "src/", dest: "/home/ubuntu/src/", mode: '0755' }
+        - { src: "src/", dest: "/home/ubuntu/src", mode: '0755' }
+        - { src: "Dockerfile/", dest: "/home/ubuntu/Dockerfile", mode: '0755' }
         - { src: "target/", dest: "/home/ubuntu/target/", mode: '0755' }
         - { src: "pom.xml", dest: "/home/ubuntu/pom.xml", mode: '0644' }
         - { src: "mvnw", dest: "/home/ubuntu/mvnw", mode: '0755' }
