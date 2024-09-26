@@ -1,4 +1,3 @@
-
 resource "aws_security_group" "access" {
   name = "project_security_group"
   vpc_id = local.vpc_id
@@ -55,7 +54,10 @@ resource "aws_instance" "capstone" {
   }
 
   provisioner "local-exec" {
-    command = "ansible-playbook -i myhosts --user ${local.ssh_user} --private-key ${local.private_key} ansible.yml"
+    command = <<EOT
+        export PRIVATE_KEY="${local.private_key}"
+        ansible-playbook -i ~/insurance/myhosts --user ${local.ssh_user} --private-key "$PRIVATE_KEY" ~/insurance/ ansible.yaml
+        EOT
   }
 }
 
@@ -70,3 +72,4 @@ resource "null_resource" "docker_compose" {
     ssh -i ${local.private_key} ${local.ssh_user}@${aws_instance.capstone.public_ip} 'cd /home/ubuntu/ && POSTGRES_USER=$POSTGRES_USER POSTGRES_PASSWORD=$POSTGRES_PASSWORD docker-compose up --build -d'
     EOT
   }
+}
