@@ -1,0 +1,8 @@
+.terraform.lock.hcl
+.git
+.gitattributes
+.terraform
+README.md    
+key1
+terraform.tfstate
+terraform.tfstate.backup

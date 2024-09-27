@@ -38,7 +38,7 @@ resource "aws_instance" "capstone" {
     type        = "ssh"
     host        = self.public_ip
     user        = local.ssh_user
-    private_key = local.private_key
+    private_key = file("${local.private_key_path}")
     timeout     = "4m"
   }
 
@@ -54,22 +54,22 @@ resource "aws_instance" "capstone" {
   }
 
   provisioner "local-exec" {
-    command = <<EOT
-        export PRIVATE_KEY="${local.private_key}"
-        ansible-playbook -i ~/insurance/myhosts --user ${local.ssh_user} --private-key "$PRIVATE_KEY" ~/insurance/ ansible.yaml
-        EOT
+    command = "ansible-playbook -i myhosts --user ${local.ssh_user} ansible.yaml --private-key ${local.private_key_path}"
   }
 }
 
 resource "null_resource" "docker_compose" {
+  depends_on = [aws_instance.capstone]
+
   provisioner "local-exec" {
     command = <<EOT
+    set -x
     export VAULT_ADDR='${local.vault_addr}'
     export DB_CREDENTIALS=$(vault kv get -format=json secret/db_credentials | jq -r .data.data)
     export POSTGRES_USER=$(echo $DB_CREDENTIALS | jq -r .POSTGRES_USER)
     export POSTGRES_PASSWORD=$(echo $DB_CREDENTIALS | jq -r .POSTGRES_PASSWORD)
-    scp -i ${local.private_key} ./docker-compose.yaml ${local.ssh_user}@${aws_instance.capstone.public_ip}:/home/ubuntu/
-    ssh -i ${local.private_key} ${local.ssh_user}@${aws_instance.capstone.public_ip} 'cd /home/ubuntu/ && POSTGRES_USER=$POSTGRES_USER POSTGRES_PASSWORD=$POSTGRES_PASSWORD docker-compose up --build -d'
+    scp -i ${local.private_key_path} ./docker-compose.yaml ${local.ssh_user}@${aws_instance.capstone.public_ip}:/home/ubuntu/
+    ssh -i ${local.private_key_path} ${local.ssh_user}@${aws_instance.capstone.public_ip} 'cd /home/ubuntu/ && which docker-compose && POSTGRES_USER=$POSTGRES_USER POSTGRES_PASSWORD=$POSTGRES_PASSWORD docker-compose up --build -d'
     EOT
   }
 }

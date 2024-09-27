@@ -22,19 +22,34 @@
         - curl
         - software-properties-common
 
-    - name: Add Docker APT key
-      apt_key:
+    - name: Create directory for Docker keyring
+      file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: Download Docker GPG key
+      get_url:
         url: https://download.docker.com/linux/ubuntu/gpg
-        state: present
+        dest: /etc/apt/keyrings/docker.asc
+        mode: '0644'
 
     - name: Add Docker repository
-      apt_repository:
-        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
-        state: present
+      shell: |
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo $VERSION_CODENAME) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-    - name: Install Docker
+    - name: Update apt cache
       apt:
-        name: docker-ce
+        update_cache: yes
+
+    - name: Install Docker packages
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
         state: present
 
     - name: Start Docker service
@@ -43,18 +58,6 @@
         enabled: yes
         state: started
 
-    - name: Install Docker Compose
-      get_url:
-        url: https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)
-        dest: /usr/local/bin/docker-compose
-        mode: '0755'
-
-    - name: Ensure Docker Compose is executable
-      file:
-        path: /usr/local/bin/docker-compose
-        mode: '0755'
-        state: file
-
     - name: Copy files and directories to /home/ubuntu
       copy:
         src: "{{ item.src }}"
@@ -62,7 +65,7 @@
         mode: "{{ item.mode }}"
       loop:
         - { src: "src/", dest: "/home/ubuntu/src", mode: '0755' }
-        - { src: "Dockerfile/", dest: "/home/ubuntu/Dockerfile", mode: '0755' }
+        - { src: "Dockerfile", dest: "/home/ubuntu/Dockerfile", mode: '0755' }
         - { src: "target/", dest: "/home/ubuntu/target/", mode: '0755' }
         - { src: "pom.xml", dest: "/home/ubuntu/pom.xml", mode: '0644' }
         - { src: "mvnw", dest: "/home/ubuntu/mvnw", mode: '0755' }
