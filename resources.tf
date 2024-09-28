@@ -62,14 +62,24 @@ resource "null_resource" "docker_compose" {
   depends_on = [aws_instance.capstone]
 
   provisioner "local-exec" {
-    command = <<EOT
+    command = <<-EOT
     set -x
     export VAULT_ADDR='${local.vault_addr}'
     export DB_CREDENTIALS=$(vault kv get -format=json secret/db_credentials | jq -r .data.data)
     export POSTGRES_USER=$(echo $DB_CREDENTIALS | jq -r .POSTGRES_USER)
     export POSTGRES_PASSWORD=$(echo $DB_CREDENTIALS | jq -r .POSTGRES_PASSWORD)
     scp -i ${local.private_key_path} ./docker-compose.yaml ${local.ssh_user}@${aws_instance.capstone.public_ip}:/home/ubuntu/
-    ssh -i ${local.private_key_path} ${local.ssh_user}@${aws_instance.capstone.public_ip} 'cd /home/ubuntu/ && which docker-compose && POSTGRES_USER=$POSTGRES_USER POSTGRES_PASSWORD=$POSTGRES_PASSWORD docker-compose up --build -d'
+    ssh -i ${local.private_key_path} ${local.ssh_user}@${aws_instance.capstone.public_ip} <<-EOF
+      cd /home/ubuntu/
+      if ! which docker-compose; then
+        echo "Docker Compose not found!"
+        exit 1
+      fi
+      docker-compose --version
+      export POSTGRES_USER=$POSTGRES_USER
+      export POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+      sudo docker-compose up --build -d
+    EOF
     EOT
   }
 }

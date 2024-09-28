@@ -51,12 +51,23 @@
           - docker-buildx-plugin
           - docker-compose-plugin
         state: present
+    - name: Install Docker Compose
+      get_url:
+        url:  "https://github.com/docker/compose/releases/download/v2.29.6/docker-compose-{{ ansible_system | lower }}-{{ ansible_architecture }}"
+        dest: /usr/local/bin/docker-compose
+        mode: '0755'
+      #vars:
+      #  docker_compose_version: "2.29.6"
 
     - name: Start Docker service
       systemd:
         name: docker
         enabled: yes
         state: started
+
+    - name: Verify Docker Compose installation
+      command: docker-compose --version
+
 
     - name: Copy files and directories to /home/ubuntu
       copy:
