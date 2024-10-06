@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        VAULT_ADDR = 'http://172.31.82.218:8200'
+        VAULT_ADDR = 'http://172.31.33.207:8200'
     }
     stages {
         stage('Setup Vault Token') {
