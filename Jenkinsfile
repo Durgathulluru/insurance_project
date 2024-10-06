@@ -6,7 +6,7 @@ pipeline {
     stages {
         stage('Setup Vault Token') {
             steps {
-                withVault(configuration: [disableChildPoliciesOverride: false, timeout: 60, vaultCredentialId: 'd4feccb4-440e-47bb-98aa-a8207a5a150a', vaultUrl: 'http://18.209.220.121:8200'], 
+                withVault(configuration: [disableChildPoliciesOverride: false, timeout: 60, vaultCredentialId: 'fd3f2736-3a44-4068-81db-5aee54f4f901', vaultUrl: 'http://18.209.220.121:8200'], 
                           vaultSecrets: [
                               [path: 'secret/aws_key', secretValues: [[envVar: 'aws_key', vaultKey: 'aws_key']]],
                               [path: 'secret/aws_pass', secretValues: [[envVar: 'aws_pass', vaultKey: 'aws_pass']]],
