@@ -9,19 +9,19 @@ pipeline {
                 git credentialsId: 'gitrepo', url: 'https://github.com/Durgathulluru/insurance_project.git', branch: 'main'
             }
         }
-        stage('Terraform Init') {
+        stage('Terraform Init and Plan') {
             steps {
-                sh 'terraform init'
-            }
-        }
-        stage('Terraform Plan') {
-            steps {
-                sh 'terraform plan'
+                withVault(configuration: [disableChildPoliciesOverride: false, timeout: 60, vaultCredentialId: 'a261b057-95af-4f78-9c01-ae407f5ca7cb', vaultUrl: 'http://44.194.244.52:8200/ui/vault/secrets']) {
+                    sh 'terraform init'
+                    sh 'terraform plan'
+                }
             }
         }
         stage('Terraform Apply') {
             steps {
-                sh 'terraform apply --auto-approve'
+                withVault(configuration: [disableChildPoliciesOverride: false, timeout: 60, vaultCredentialId: 'a261b057-95af-4f78-9c01-ae407f5ca7cb', vaultUrl: 'http://44.194.244.52:8200/ui/vault/secrets']) {
+                    sh 'terraform apply --auto-approve'
+                }
             }
         }
         stage('Test') {
