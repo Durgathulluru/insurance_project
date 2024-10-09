@@ -6,7 +6,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git credentialsId: 'gitrepo', url: 'https://github.com/Durgathulluru/insurance_project.git', branch: 'main'
+                git branch: 'main', credentialsId: '01f47131-24db-44d7-b922-626f64005288', url: 'https://github.com/Durgathulluru/insurance_project.git'
             }
         }
         stage('Terraform Init and Plan') {
