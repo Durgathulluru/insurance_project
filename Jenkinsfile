@@ -9,6 +9,15 @@ pipeline {
                 git branch: 'main', credentialsId: '01f47131-24db-44d7-b922-626f64005288', url: 'https://github.com/Durgathulluru/insurance_project.git'
             }
         }
+        stage('Test Vault') {
+            steps {
+                withVault(configuration: [disableChildPoliciesOverride: false, timeout: 60, vaultCredentialId: 'a261b057-95af-4f78-9c01-ae407f5ca7cb', vaultUrl: 'http://44.194.244.52:8200/ui/vault/secrets'], vaultSecrets: [
+                    [path: 'secret/aws_key', secretValues: [[envVar: 'AWS_KEY', vaultKey: 'value']]]
+                ]) {
+                    sh 'echo $AWS_KEY'
+                }
+            }
+        }
         stage('Terraform Init and Plan') {
             steps {
                 withVault(configuration: [disableChildPoliciesOverride: false, timeout: 60, vaultCredentialId: 'a261b057-95af-4f78-9c01-ae407f5ca7cb', vaultUrl: 'http://44.194.244.52:8200'], vaultSecrets: [
