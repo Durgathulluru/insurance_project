@@ -1,30 +1,24 @@
 pipeline {
     agent any
     environment {
-        VAULT_ADDR = 'http://172.31.34.60:8200'
+        VAULT_ADDR = 'http://172.31.33.227:8200'
     }
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', credentialsId: '01f47131-24db-44d7-b922-626f64005288', url: 'https://github.com/Durgathulluru/insurance_project.git'
+                git branch: 'main', credentialsId: '8f92c242-9631-4fda-a291-528707364179', url: 'https://github.com/Durgathulluru/insurance_project'
             }
         }
         stage('Test Vault') {
             steps {
-                withVault(configuration: [disableChildPoliciesOverride: false, timeout: 60, vaultCredentialId: 'a261b057-95af-4f78-9c01-ae407f5ca7cb', vaultUrl: 'http://44.194.244.52:8200'], vaultSecrets: [
-                    [path: 'secret/aws_key', secretValues: [[envVar: 'aws_key', vaultKey: 'value']]]
-                ]) {
+                withVault(configuration: [disableChildPoliciesOverride: false, timeout: 60, vaultCredentialId: 'vault_id', vaultUrl: 'http://3.209.51.144:8200/ui/vault'], vaultSecrets: [[path: 'secret/aws_key', secretValues: [[vaultKey: 'aws_key']]], [path: 'secret/aws_pass', secretValues: [[vaultKey: 'aws_pass']]], [path: 'db_credentials', secretValues: [[vaultKey: 'POSTGRES_USER'], [vaultKey: 'POSTGRES_PASSWORD']]]]) {
                     sh 'echo $aws_key'
                 }
             }
         }
         stage('Terraform Init and Plan') {
             steps {
-                withVault(configuration: [disableChildPoliciesOverride: false, timeout: 60, vaultCredentialId: 'a261b057-95af-4f78-9c01-ae407f5ca7cb', vaultUrl: 'http://44.194.244.52:8200'], vaultSecrets: [
-                    [path: 'secret/aws_key', secretValues: [[envVar: 'aws_key', vaultKey: 'value']]],
-                    [path: 'secret/aws_pass', secretValues: [[envVar: 'aws_pass', vaultKey: 'value']]],
-                    [path: 'secret/db_credentials', secretValues: [[envVar: 'db_credentials', vaultKey: 'value']]]
-                ]) {
+                withVault(configuration: [disableChildPoliciesOverride: false, timeout: 60, vaultCredentialId: 'vault_id', vaultUrl: 'http://3.209.51.144:8200/ui/vault'], vaultSecrets: [[path: 'secret/aws_key', secretValues: [[vaultKey: 'aws_key']]], [path: 'secret/aws_pass', secretValues: [[vaultKey: 'aws_pass']]], [path: 'db_credentials', secretValues: [[vaultKey: 'POSTGRES_USER'], [vaultKey: 'POSTGRES_PASSWORD']]]]) {
                     sh 'terraform init'
                     sh 'terraform plan'
                 }
@@ -32,11 +26,7 @@ pipeline {
         }
         stage('Terraform Apply') {
             steps {
-                withVault(configuration: [disableChildPoliciesOverride: false, timeout: 60, vaultCredentialId: 'a261b057-95af-4f78-9c01-ae407f5ca7cb', vaultUrl: 'http://44.194.244.52:8200'], vaultSecrets: [
-                    [path: 'secret/aws_key', secretValues: [[envVar: 'aws_key', vaultKey: 'value']]],
-                    [path: 'secret/aws_pass', secretValues: [[envVar: 'aws_pass', vaultKey: 'value']]],
-                    [path: 'secret/db_credentials', secretValues: [[envVar: 'db_credentials', vaultKey: 'value']]]
-                ]) {
+                withVault(configuration: [disableChildPoliciesOverride: false, timeout: 60, vaultCredentialId: 'vault_id', vaultUrl: 'http://3.209.51.144:8200/ui/vault'], vaultSecrets: [[path: 'secret/aws_key', secretValues: [[vaultKey: 'aws_key']]], [path: 'secret/aws_pass', secretValues: [[vaultKey: 'aws_pass']]], [path: 'db_credentials', secretValues: [[vaultKey: 'POSTGRES_USER'], [vaultKey: 'POSTGRES_PASSWORD']]]]) {
                     sh 'terraform apply --auto-approve'
                 }
             }
