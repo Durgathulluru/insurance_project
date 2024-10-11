@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', credentialsId: 'c58c441a-735e-4de3-8c1f-2eb65eb9715c', url: 'https://github.com/Durgathulluru/insurance_project'
+                git branch: 'main', credentialsId: '83b53aca-cccd-40ef-acfd-5a3fe9a18eaa', url: 'https://github.com/Durgathulluru/insurance_project'
             }
         }
         stage('Vault and Terraform Operations') {
@@ -13,8 +13,8 @@ pipeline {
                     configuration: [
                         disableChildPoliciesOverride: false,
                         timeout: 60,
-                        vaultCredentialId: 'efbec909-64a9-4ec0-8d08-8906c21a31e3',
-                        vaultUrl: 'http://44.194.162.10:8200'
+                        vaultCredentialId: '96d3bbc7-aca7-4ebf-917c-529fbc311805', // Ensure this matches the ID of your Secret Text credential
+                        vaultUrl: 'http://34.226.38.215:8200'
                     ],
                     vaultSecrets: [
                         [path: 'secret/aws_key', secretValues: [[vaultKey: 'aws_key']]],
@@ -22,19 +22,14 @@ pipeline {
                         [path: 'secret/db_credentials', secretValues: [[vaultKey: 'POSTGRES_USER'], [vaultKey: 'POSTGRES_PASSWORD']]]
                     ]
                 ) {
-                    stage('Test Vault') {
-                        steps {
+                    script {
+                        // Set environment variables for Terraform
+                        withEnv(["VAULT_TOKEN=${env.VAULT_TOKEN}"]) {
+                            // Test Vault
                             sh 'echo $aws_key'
-                        }
-                    }
-                    stage('Terraform Init and Plan') {
-                        steps {
+                            // Terraform commands
                             sh 'terraform init'
                             sh 'terraform plan'
-                        }
-                    }
-                    stage('Terraform Apply') {
-                        steps {
                             sh 'terraform apply --auto-approve'
                         }
                     }
