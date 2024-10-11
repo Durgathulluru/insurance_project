@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', credentialsId: '8f92c242-9631-4fda-a291-528707364179', url: 'https://github.com/Durgathulluru/insurance_project'
+                git branch: 'main', credentialsId: 'c58c441a-735e-4de3-8c1f-2eb65eb9715c', url: 'https://github.com/Durgathulluru/insurance_project'
             }
         }
         stage('Vault and Terraform Operations') {
@@ -13,8 +13,8 @@ pipeline {
                     configuration: [
                         disableChildPoliciesOverride: false,
                         timeout: 60,
-                        vaultCredentialId: '3eb4ece4-7890-4359-9100-20b17ae8df2c',
-                        vaultUrl: 'http://3.209.51.144:8200'
+                        vaultCredentialId: 'efbec909-64a9-4ec0-8d08-8906c21a31e3',
+                        vaultUrl: 'http://44.194.162.10:8200'
                     ],
                     vaultSecrets: [
                         [path: 'secret/aws_key', secretValues: [[vaultKey: 'aws_key']]],
