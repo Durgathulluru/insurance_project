@@ -4,5 +4,5 @@ provider "aws" {
   secret_key = data.vault_generic_secret.aws_pass.data["aws_pass"]
 }
 provider "vault" {
-   address = local.vault_addr
+   address = "http://172.31.90.179:8200"
 }

@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    environment {
+        VAULT_TOKEN = credentials('96d3bbc7-aca7-4ebf-917c-529fbc311805') // Ensure this matches the ID of your Secret Text credential
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -14,7 +18,7 @@ pipeline {
                         disableChildPoliciesOverride: false,
                         timeout: 60,
                         vaultCredentialId: '96d3bbc7-aca7-4ebf-917c-529fbc311805', // Ensure this matches the ID of your Secret Text credential
-                        vaultUrl: 'http://34.226.38.215:8200'
+                        vaultUrl: 'http://172.31.90.179:8200'
                     ],
                     vaultSecrets: [
                         [path: 'secret/aws_key', secretValues: [[vaultKey: 'aws_key']]],
