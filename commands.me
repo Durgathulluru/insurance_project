@@ -1,0 +1,12 @@
+ export VAULT_ADDR='http://127.0.0.1:8200'
+ vault operator init -key-shares=1 -key-threshold=1
+ vault operator unseal
+ vault login
+ vault auth enable approle
+ vault write auth/approle/role/jenkins-role token_num_uses=0 secret_id_num_uses=0 policies="jenkins"
+ vault read auth/approle/role/jenkins-role/role-id
+ vault write -f auth/approle/role/jenkins-role/secret-id
+ vault write secrets/terraform/aws/accesskey access_key=<your acces_key>
+ vault write secrets/terraform/aws/secretkey secret_key=<your secret_key>
+ vault policy write jenkins jenins_policy.hcl
+ 
