@@ -26,7 +26,7 @@ resource "aws_security_group" "access" {
 
 resource "aws_instance" "capstone" {
   ami                         = local.ami_id
-  instance_type               = "t2.micro"
+  instance_type               = "t2.medium"
   associate_public_ip_address = true
   vpc_security_group_ids      = [aws_security_group.access.id]
   key_name                    = local.key_name
@@ -65,7 +65,7 @@ resource "null_resource" "docker_compose" {
     command = <<-EOT
     set -x
     export VAULT_ADDR='${local.vault_addr}'
-    export DB_CREDENTIALS=$(vault kv get -format=json secret/db_credentials | jq -r .data.data)
+    export DB_CREDENTIALS=$(vault kv get -format=json secrets/terraform/aws/db_credentials | jq -r .data.data)
     export POSTGRES_USER=$(echo $DB_CREDENTIALS | jq -r .POSTGRES_USER)
     export POSTGRES_PASSWORD=$(echo $DB_CREDENTIALS | jq -r .POSTGRES_PASSWORD)
     scp -i ${local.private_key_path} ./docker-compose.yaml ${local.ssh_user}@${aws_instance.capstone.public_ip}:/home/ubuntu/

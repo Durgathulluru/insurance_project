@@ -1,12 +1,12 @@
-data "vault_generic_secret" "aws_key" {
-      path = "secret/aws_key"
+data "vault_generic_secret" "access_key" {
+      path = "secrets/terraform/aws/accesskey"
 }
 
-data "vault_generic_secret" "aws_pass" {
-      path = "secret/aws_pass"
+data "vault_generic_secret" "secret_key" {
+      path = "secrets/terraform/aws/secretkey"
 }
 
 
 data "vault_generic_secret" "db_credentials" {
-      path = "secret/db_credentials"
+      path = "secrets/terraform/aws/db_credentials"
 }
