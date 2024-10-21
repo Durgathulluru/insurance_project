@@ -1,14 +1,10 @@
 pipeline {
     agent any
 
-    environment {
-        VAULT_TOKEN = credentials('96d3bbc7-aca7-4ebf-917c-529fbc311805') // Ensure this matches the ID of your Secret Text credential
-    }
-
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', credentialsId: '83b53aca-cccd-40ef-acfd-5a3fe9a18eaa', url: 'https://github.com/Durgathulluru/insurance_project'
+                git branch: 'main', url: 'https://github.com/Durgathulluru/insurance_project'
             }
         }
         stage('Vault and Terraform Operations') {
@@ -16,25 +12,34 @@ pipeline {
                 withVault(
                     configuration: [
                         disableChildPoliciesOverride: false,
+                        engineVersion: 1,
                         timeout: 60,
-                        vaultCredentialId: '96d3bbc7-aca7-4ebf-917c-529fbc311805', // Ensure this matches the ID of your Secret Text credential
-                        vaultUrl: 'http://172.31.90.179:8200'
+                        vaultCredentialId: 'vault-approle',
+                        vaultUrl: 'http://98.82.210.146:8200'
                     ],
                     vaultSecrets: [
-                        [path: 'secret/aws_key', secretValues: [[vaultKey: 'aws_key']]],
-                        [path: 'secret/aws_pass', secretValues: [[vaultKey: 'aws_pass']]],
-                        [path: 'secret/db_credentials', secretValues: [[vaultKey: 'POSTGRES_USER'], [vaultKey: 'POSTGRES_PASSWORD']]]
+                        [engineVersion: 1, path: 'secrets/terraform/aws/accesskey', secretValues: [[vaultKey: 'access_key']]],
+                        [engineVersion: 1, path: 'secrets/terraform/aws/secretkey', secretValues: [[vaultKey: 'secret_key']]],
+                        [engineVersion: 1, path: 'secrets/terraform/aws/db_credentials', secretValues: [[vaultKey: 'POSTGRES_USER'], [vaultKey: 'POSTGRES_PASSWORD']]]
                     ]
                 ) {
                     script {
                         // Set environment variables for Terraform
-                        withEnv(["VAULT_TOKEN=${env.VAULT_TOKEN}"]) {
+                        withEnv(["access_key=${env.access_key}", "secret_key=${env.secret_key}", "POSTGRES_USER=${env.POSTGRES_USER}", "POSTGRES_PASSWORD=${env.POSTGRES_PASSWORD}"]) {
                             // Test Vault
-                            sh 'echo $aws_key'
+                            sh '''
+                            echo "access_key: $access_key"
+                            echo "secret_key: $secret_key"
+                            echo "POSTGRES_USER: $POSTGRES_USER"
+                            echo "POSTGRES_PASSWORD: $POSTGRES_PASSWORD"
+                            '''
                             // Terraform commands
-                            sh 'terraform init'
-                            sh 'terraform plan'
-                            sh 'terraform apply --auto-approve'
+                            sh '''
+                            terraform init
+                            terraform plan -var="access_key=$access_key" -var="secret_key=$secret_key" -var="POSTGRES_USER=$POSTGRES_USER" -var="POSTGRES_PASSWORD=$POSTGRES_PASSWORD"
+                            terraform apply -var="access_key=$access_key" -var="secret_key=$secret_key" -var="POSTGRES_USER=$POSTGRES_USER" -var="POSTGRES_PASSWORD=$POSTGRES_PASSWORD" --auto-approve
+                        '''
+                            
                         }
                     }
                 }
